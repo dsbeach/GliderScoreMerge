@@ -1,6 +1,6 @@
 ﻿namespace GliderScoreMerge
 {
-    partial class Form1
+    partial class GliderScoreMerge
     {
         /// <summary>
         /// Required designer variable.

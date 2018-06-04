@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace GliderScoreMerge
 {
-    public partial class Form1 : Form
+    public partial class GliderScoreMerge : Form
     {
-        public Form1()
+        public GliderScoreMerge()
         {
             InitializeComponent();
         }
