@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Diagnostics;
 using System.Data.OleDb;
 using System.Data;
+using System.Windows.Forms;
 
 namespace GliderScoreMerge
 {
@@ -15,6 +16,7 @@ namespace GliderScoreMerge
     {
         string ZipFileName;
         string mdbExtractedFileName;
+        GliderScoreMDB zipMDB;
         List<string> tempFileNames = new List<string>();
 
         public GliderScoreZip(string fileName)
@@ -27,6 +29,7 @@ namespace GliderScoreMerge
                 tempFileNames.Add(mdbExtractedFileName);
                 File.Delete(mdbExtractedFileName);
                 mdbEntry.ExtractToFile(mdbExtractedFileName);
+                zipMDB = new GliderScoreMDB(mdbExtractedFileName);
             }
         }
 
@@ -40,14 +43,34 @@ namespace GliderScoreMerge
 
         public DataTable GetTimerNames()
         {
-            List<string> nameList = new List<string>();
-            string connString = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + mdbExtractedFileName;
-            string query = "SELECT * FROM TimerNames";
-            OleDbDataAdapter dAdapter = new OleDbDataAdapter(query, connString);
-            OleDbCommandBuilder cBuilder = new OleDbCommandBuilder(dAdapter);
-            DataTable dTable = new DataTable();
-            dAdapter.Fill(dTable);
-            return dTable;
+            return zipMDB.GetTimerNames();
+        }
+
+        public DataTable GetTimerSettings(int timerNo)
+        {
+            return zipMDB.GetTimerSettings(timerNo);
+        }
+
+        public void ExtractAudioFile(string fileName, string destination)
+        {
+            if (fileName.Length == 0) { return; }
+            try
+            {
+                using (ZipArchive zip = ZipFile.OpenRead(ZipFileName))
+                {
+                    ZipArchiveEntry audioFile = zip.Entries.First(x => x.FullName.EndsWith("Audio/" + fileName));
+                    string qualifiedFileName = Path.Combine(destination, fileName);
+                    if (File.Exists(qualifiedFileName))
+                    {
+                        File.Delete(qualifiedFileName);
+                    }
+                    audioFile.ExtractToFile(qualifiedFileName);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Unable to extract file: " + fileName, "File skipped!");
+            }
         }
     }
 }

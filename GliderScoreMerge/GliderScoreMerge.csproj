@@ -48,6 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GliderScoreDirectory.cs" />
+    <Compile Include="GliderScoreMDB.cs" />
     <Compile Include="GliderScoreMerge.cs">
       <SubType>Form</SubType>
     </Compile>
