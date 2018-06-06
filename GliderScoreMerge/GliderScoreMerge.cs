@@ -17,6 +17,7 @@ namespace GliderScoreMerge
     {
         GliderScoreZip zip;
         GliderScoreDirectory directory;
+        HashSet<string> audioHashset = new HashSet<string>();
 
         public GliderScoreMerge()
         {
@@ -34,8 +35,9 @@ namespace GliderScoreMerge
                 {
                     // HACK HACK HACK - MICROSOFT BUG
                     // CHECK OUT https://www.telerik.com/forums/double-click-on-openfiledialog-is-raising-itemclick-event-on-radtreeview
-                    dgTimerNames.Enabled = false;
+                    //dgTimerNames.Enabled = false;
                     zip = new GliderScoreZip(openFileDialog1.FileName);
+                    audioHashset.Clear();
                     tbInputZipFile.Text = openFileDialog1.FileName;
                 }
                 catch (Exception)
@@ -44,13 +46,14 @@ namespace GliderScoreMerge
                 }
 
                 // NOW WAIT FOR THE ERRANT MOUSE UP EVENT TO BE CONSUMED
-                System.Threading.Timer _bugTimer = new System.Threading.Timer(delegate
+                /*System.Threading.Timer _bugTimer = new System.Threading.Timer(delegate
                 {
                     dgTimerNames.Invoke((MethodInvoker)delegate
                    {
                        dgTimerNames.Enabled = true;
                    });
                 }, null, 500, Timeout.Infinite);
+                */
                 setDataSource();
             }
         }
@@ -64,6 +67,7 @@ namespace GliderScoreMerge
             {
                 tbInputZipFile.Text = inZip;
                 zip = new GliderScoreZip(inZip);
+                audioHashset.Clear();
             }
             else { tbInputZipFile.Text = ""; }
 
@@ -96,6 +100,7 @@ namespace GliderScoreMerge
                 }
             }
             dgTimerNames.DataSource = table;
+            dgTimerNames.Sort(dgTimerNames.Columns["TimerName"], ListSortDirection.Ascending);
         }
 
         private void bChangeGliderScoreDirectory_Click(object sender, EventArgs e)
@@ -139,7 +144,12 @@ namespace GliderScoreMerge
                     directory.InsertTimerSettings(row["TimerName"].ToString(), timerSettings);
                     foreach (DataRow settingsRow in timerSettings.Rows)
                     {
-                        zip.ExtractAudioFile(settingsRow["AnnouncementFileName"].ToString(), Path.Combine(tbOutputGliderScoreDirectory.Text, "Audio"));
+                        // the hashset contains the list of audio files already extracted from this zip input
+                        if (!audioHashset.Contains(settingsRow["AnnouncementFileName"].ToString()))
+                        {
+                            zip.ExtractAudioFile(settingsRow["AnnouncementFileName"].ToString(), Path.Combine(tbOutputGliderScoreDirectory.Text, "Audio"));
+                            audioHashset.Add(settingsRow["AnnouncementFileName"].ToString());
+                        }
                     }
                 }
             }
